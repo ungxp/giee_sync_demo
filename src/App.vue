@@ -38,7 +38,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div @click="getCaptcha">11</div>
+  <div @click="getCaptcha">111</div>
   <div v-html="svg"></div>
   <el-image
     style="width: 100px; height: 100px"
