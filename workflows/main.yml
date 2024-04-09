@@ -1,0 +1,48 @@
+name: Build and Deploy
+on:
+  push:
+    branches: [master]
+  #allow you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+      - name: use pnpm
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.32.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "14"
+          cache: "pnpm"
+      - uses: actions/cache@v3
+        id: pnpm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/.pnpm-store
+            D:\.pnpm-store
+            **/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}
+      - name: install Dependencies
+        if: steps.pnpm-cache.outputs.cache-hit != 'true'
+        run: pnpm i
+      - name: build dist
+      - run: pnpm run build
+
+      # - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
+      #   run: |
+      #     npm i
+      #     npm run build
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist # The folder the action should deploy.

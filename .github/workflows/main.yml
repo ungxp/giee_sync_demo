@@ -1,5 +1,9 @@
 name: Build and Deploy
-on: [push]
+on:
+  push:
+    branches: [master]
+  #allow you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -18,4 +22,15 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
+          branch: gh-pages # The branch the action should deploy to.
           folder: dist # The folder the action should deploy.
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: dist/ #The source path. Defaults to GITHUB_WORKSPACE and is relative to it
+          remote_path: /home/demo-site #存放的服务器文件地址
+          remote_host: 192.168.1.165 #服务器地址
+          remote_port: 22 #服务器端口
+          remote_user: root #账号
+          remote_key: ${{ secrets.DEPLOY_KEY }}
